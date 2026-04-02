@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Management System</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--light);
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        h2 { color: var(--dark); border-bottom: 2px solid var(--primary); padding-bottom: 10px; }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            padding: 10px;
+            border: 1px solid #cbd5e1;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        button:hover { opacity: 0.9; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            text-align: left;
+            padding: 12px;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        th { background-color: var(--primary); color: white; }
+
+        .btn-delete {
+            background-color: var(--danger);
+            padding: 5px 10px;
+            font-size: 0.8rem;
+        }
+
+        .search-box {
+            width: 100%;
+            margin-bottom: 20px;
+            padding: 12px;
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Records</h2>
+
+    <div class="form-group">
+        <input type="text" id="stdName" placeholder="Full Name">
+        <input type="text" id="stdID" placeholder="Student ID">
+        <input type="email" id="stdEmail" placeholder="Email Address">
+        <button onclick="addStudent()">Add Student</button>
+    </div>
+
+    <input type="text" id="search" class="search-box" placeholder="Search by name..." onkeyup="searchStudent()">
+
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody id="studentTableBody">
+            </tbody>
+    </table>
+</div>
+
+<script>
+    // Load data from LocalStorage on startup
+    document.addEventListener('DOMContentLoaded', displayStudents);
+
+    function addStudent() {
+        const name = document.getElementById('stdName').value;
+        const id = document.getElementById('stdID').value;
+        const email = document.getElementById('stdEmail').value;
+
+        if (name === '' || id === '' || email === '') {
+            alert("Please fill all fields");
+            return;
+        }
+
+        const student = { id, name, email };
+        let students = localStorage.getItem('students') ? JSON.parse(localStorage.getItem('students')) : [];
+        
+        students.push(student);
+        localStorage.setItem('students', JSON.stringify(students));
+
+        // Clear inputs
+        document.getElementById('stdName').value = '';
+        document.getElementById('stdID').value = '';
+        document.getElementById('stdEmail').value = '';
+
+        displayStudents();
+    }
+
+    function displayStudents() {
+        const students = localStorage.getItem('students') ? JSON.parse(localStorage.getItem('students')) : [];
+        const tableBody = document.getElementById('studentTableBody');
+        tableBody.innerHTML = '';
+
+        students.forEach((student, index) => {
+            tableBody.innerHTML += `
+                <tr>
+                    <td>${student.id}</td>
+                    <td>${student.name}</td>
+                    <td>${student.email}</td>
+                    <td><button class="btn-delete" onclick="deleteStudent(${index})">Delete</button></td>
+                </tr>
+            `;
+        });
+    }
+
+    function deleteStudent(index) {
+        let students = JSON.parse(localStorage.getItem('students'));
+        students.splice(index, 1);
+        localStorage.setItem('students', JSON.stringify(students));
+        displayStudents();
+    }
+
+    function searchStudent() {
+        const filter = document.getElementById('search').value.toUpperCase();
+        const trs = document.getElementById('studentTableBody').getElementsByTagName('tr');
+
+        for (let i = 0; i < trs.length; i++) {
+            let td = trs[i].getElementsByTagName('td')[1]; // Search by Name column
+            if (td) {
+                let textValue = td.textContent || td.innerText;
+                trs[i].style.display = textValue.toUpperCase().indexOf(filter) > -1 ? "" : "none";
+            }
+        }
+    }
+</script>
+
+</body>
+</html>
